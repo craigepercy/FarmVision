@@ -185,8 +185,17 @@ const CattleManagement: React.FC = () => {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography 
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #1e293b 0%, #475569 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}
+        >
           Cattle Management
         </Typography>
         <Box display="flex" gap={1}>

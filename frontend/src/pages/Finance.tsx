@@ -14,7 +14,7 @@ import {
   Button,
   Chip,
 } from '@mui/material';
-import { Add, GetApp, TrendingUp, TrendingDown, SmartToy, CalendarToday } from '@mui/icons-material';
+import { Add, GetApp, SmartToy, CalendarToday } from '@mui/icons-material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
@@ -38,8 +38,17 @@ const Finance: React.FC = () => {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography 
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #1e293b 0%, #475569 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}
+        >
           Finance Dashboard
         </Typography>
         <Box>
@@ -54,75 +63,99 @@ const Finance: React.FC = () => {
 
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Monthly Revenue
-                  </Typography>
-                  <Typography variant="h4" color="success.main">
-                    R{monthlyRevenue.toLocaleString()}
-                  </Typography>
-                </Box>
-                <TrendingUp color="success" fontSize="large" />
-              </Box>
+          <Card sx={{
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            color: 'white',
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(16, 185, 129, 0.3)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 20px 40px rgba(16, 185, 129, 0.4)',
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography sx={{ opacity: 0.9, fontWeight: 500, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.5px' }} gutterBottom>
+                Monthly Revenue
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                R{monthlyRevenue.toLocaleString()}
+              </Typography>
             </CardContent>
           </Card>
         </Box>
 
         <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Monthly Expenses
-                  </Typography>
-                  <Typography variant="h4" color="error.main">
-                    R{monthlyExpenses.toLocaleString()}
-                  </Typography>
-                </Box>
-                <TrendingDown color="error" fontSize="large" />
-              </Box>
+          <Card sx={{
+            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            color: 'white',
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(245, 158, 11, 0.3)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 20px 40px rgba(245, 158, 11, 0.4)',
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography sx={{ opacity: 0.9, fontWeight: 500, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.5px' }} gutterBottom>
+                Monthly Expenses
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                R{monthlyExpenses.toLocaleString()}
+              </Typography>
             </CardContent>
           </Card>
         </Box>
 
         <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Net Profit
-                  </Typography>
-                  <Typography variant="h4" color="success.main">
-                    R{(monthlyRevenue - monthlyExpenses).toLocaleString()}
-                  </Typography>
-                </Box>
-                <TrendingUp color="success" fontSize="large" />
-              </Box>
+          <Card sx={{
+            background: (monthlyRevenue - monthlyExpenses) >= 0 
+              ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+              : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            color: 'white',
+            borderRadius: 3,
+            boxShadow: (monthlyRevenue - monthlyExpenses) >= 0 
+              ? '0 8px 32px rgba(59, 130, 246, 0.3)'
+              : '0 8px 32px rgba(239, 68, 68, 0.3)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: (monthlyRevenue - monthlyExpenses) >= 0 
+                ? '0 20px 40px rgba(59, 130, 246, 0.4)'
+                : '0 20px 40px rgba(239, 68, 68, 0.4)',
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography sx={{ opacity: 0.9, fontWeight: 500, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.5px' }} gutterBottom>
+                Net Profit
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                R{(monthlyRevenue - monthlyExpenses).toLocaleString()}
+              </Typography>
             </CardContent>
           </Card>
         </Box>
 
         <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    VAT Owed
-                  </Typography>
-                  <Typography variant="h4" color="warning.main">
-                    R{vatAmount.toLocaleString()}
-                  </Typography>
-                </Box>
-                <Box sx={{ color: 'warning.main' }}>
-                  <Typography variant="h3">%</Typography>
-                </Box>
-              </Box>
+          <Card sx={{
+            background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+            color: 'white',
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(139, 92, 246, 0.3)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 20px 40px rgba(139, 92, 246, 0.4)',
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography sx={{ opacity: 0.9, fontWeight: 500, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.5px' }} gutterBottom>
+                VAT Owed
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                R{vatAmount.toLocaleString()}
+              </Typography>
             </CardContent>
           </Card>
         </Box>

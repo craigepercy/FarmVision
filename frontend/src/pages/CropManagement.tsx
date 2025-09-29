@@ -96,8 +96,17 @@ AI Recommendation: ${analysisResults.cropHealth > 85 ? 'Excellent conditions! Co
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography 
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #1e293b 0%, #475569 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}
+        >
           Crop Management
         </Typography>
         <Button variant="contained" startIcon={<Add />}>
@@ -215,6 +224,31 @@ AI Recommendation: ${analysisResults.cropHealth > 85 ? 'Excellent conditions! Co
                   onChange={(e) => setFormData({...formData, location: {...formData.location, address: e.target.value}})}
                 />
               </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+              <TextField
+                fullWidth
+                label="Latitude"
+                type="number"
+                value={formData.location?.lat || ''}
+                onChange={(e) => setFormData({ 
+                  ...formData, 
+                  location: { ...formData.location, lat: parseFloat(e.target.value) || 0 }
+                })}
+                inputProps={{ step: 0.000001 }}
+              />
+              <TextField
+                fullWidth
+                label="Longitude"
+                type="number"
+                value={formData.location?.lng || ''}
+                onChange={(e) => setFormData({ 
+                  ...formData, 
+                  location: { ...formData.location, lng: parseFloat(e.target.value) || 0 }
+                })}
+                inputProps={{ step: 0.000001 }}
+              />
             </Box>
 
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
@@ -341,7 +375,7 @@ AI Recommendation: ${analysisResults.cropHealth > 85 ? 'Excellent conditions! Co
               </Box>
             </Box>
 
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Historic Yields & Grades</Typography>
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Historic Yields &amp; Grades</Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
               <Box sx={{ flex: '1 1 120px', minWidth: '120px' }}>
                 <TextField
