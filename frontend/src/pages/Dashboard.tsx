@@ -8,6 +8,7 @@ import {
   ListItem,
   ListItemText,
   Chip,
+  Button,
 } from '@mui/material';
 import {
   Agriculture,
@@ -15,11 +16,33 @@ import {
   AttachMoney,
   Warning,
 } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
+import { selectThread, markThreadAsRead, createNewThread } from '../store/slices/messagingSlice';
 
 const Dashboard: React.FC = () => {
   const { stats, notifications } = useSelector((state: RootState) => state.dashboard);
+  const { threads } = useSelector((state: RootState) => state.messaging);
+  const dispatch = useDispatch();
+
+  const handleMessageClick = (threadId: string) => {
+    dispatch(selectThread(threadId));
+    dispatch(markThreadAsRead(threadId));
+  };
+
+  const handleViewAllMessages = () => {
+    console.log('Navigate to full messaging interface');
+  };
+
+  const handleCompose = () => {
+    const recipient = prompt('Enter recipient:');
+    const subject = prompt('Enter subject:');
+    const content = prompt('Enter message:');
+    
+    if (recipient && subject && content) {
+      dispatch(createNewThread({ recipient, subject, content }));
+    }
+  };
 
   const StatCard = ({ title, value, icon, color }: any) => (
     <Card>
@@ -50,8 +73,8 @@ const Dashboard: React.FC = () => {
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
           <StatCard
-            title="Total Acres"
-            value={stats.totalAcres.toLocaleString()}
+            title="Total Hectares"
+            value={stats.totalHectares.toLocaleString()}
             icon={<Agriculture fontSize="large" />}
             color="green"
           />
@@ -67,7 +90,7 @@ const Dashboard: React.FC = () => {
         <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
           <StatCard
             title="Monthly Revenue"
-            value={`$${stats.monthlyRevenue.toLocaleString()}`}
+            value={`R${stats.monthlyRevenue.toLocaleString()}`}
             icon={<AttachMoney fontSize="large" />}
             color="green"
           />
@@ -87,12 +110,28 @@ const Dashboard: React.FC = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Recent Activity
+                Weather Forecast & Farm Map
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Farm operations overview and key metrics will be displayed here.
-                This includes crop health monitoring, livestock tracking, and equipment status.
-              </Typography>
+              <Box sx={{ height: 300, bgcolor: 'grey.100', borderRadius: 1, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  Interactive farm map with weather overlay will be displayed here
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {[0,1,2,3,4,5,6].map(day => (
+                  <Box key={day} sx={{ flex: '1 1 80px', textAlign: 'center', p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
+                    <Typography variant="caption" display="block">
+                      {new Date(Date.now() + day * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold">
+                      {22 + Math.floor(Math.random() * 8)}°C
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {Math.floor(Math.random() * 30)}% rain
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
             </CardContent>
           </Card>
         </Box>
@@ -101,11 +140,31 @@ const Dashboard: React.FC = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Notifications
+                Inbox & Messages
               </Typography>
               <List dense>
+                {threads.slice(0, 3).map((thread) => (
+                  <ListItem 
+                    key={thread.id} 
+                    sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'grey.50' } }}
+                    onClick={() => handleMessageClick(thread.id)}
+                  >
+                    <ListItemText
+                      primary={thread.subject}
+                      secondary={`${thread.participants.join(', ')} • ${new Date(thread.lastMessageTime).toLocaleDateString()}`}
+                    />
+                    {thread.unreadCount > 0 && (
+                      <Chip
+                        label={thread.unreadCount}
+                        size="small"
+                        color="primary"
+                        sx={{ minWidth: 24, height: 20 }}
+                      />
+                    )}
+                  </ListItem>
+                ))}
                 {notifications.map((notification) => (
-                  <ListItem key={notification.id}>
+                  <ListItem key={notification.id} sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'grey.50' } }}>
                     <ListItemText
                       primary={notification.message}
                       secondary={new Date(notification.timestamp).toLocaleDateString()}
@@ -118,6 +177,14 @@ const Dashboard: React.FC = () => {
                   </ListItem>
                 ))}
               </List>
+              <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                <Button size="small" variant="outlined" fullWidth onClick={handleViewAllMessages}>
+                  View All Messages
+                </Button>
+                <Button size="small" variant="contained" fullWidth onClick={handleCompose}>
+                  Compose
+                </Button>
+              </Box>
             </CardContent>
           </Card>
         </Box>

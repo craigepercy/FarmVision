@@ -18,6 +18,9 @@ import { RootState } from '../store';
 const Analytics: React.FC = () => {
   const { data } = useSelector((state: RootState) => state.analytics);
   const [selectedScenario, setSelectedScenario] = React.useState('');
+  const [selectedSegment, setSelectedSegment] = React.useState('all');
+  const [selectedFarm, setSelectedFarm] = React.useState('');
+  const [selectedVarietal, setSelectedVarietal] = React.useState('');
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
@@ -25,9 +28,61 @@ const Analytics: React.FC = () => {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">
-          Analytics & Scenario Simulator
+          Analytics &amp; Scenario Simulator
         </Typography>
         <Box>
+          <FormControl sx={{ mr: 2, minWidth: 150 }}>
+            <InputLabel>Segment</InputLabel>
+            <Select
+              value={selectedSegment}
+              label="Segment"
+              onChange={(e) => setSelectedSegment(e.target.value)}
+            >
+              <MenuItem value="all">All Operations</MenuItem>
+              <MenuItem value="crops">Crops</MenuItem>
+              <MenuItem value="cattle">Cattle</MenuItem>
+            </Select>
+          </FormControl>
+          {selectedSegment !== 'all' && (
+            <FormControl sx={{ mr: 2, minWidth: 150 }}>
+              <InputLabel>Farm</InputLabel>
+              <Select
+                value={selectedFarm}
+                label="Farm"
+                onChange={(e) => setSelectedFarm(e.target.value)}
+              >
+                <MenuItem value="">All Farms</MenuItem>
+                <MenuItem value="north">North Farm</MenuItem>
+                <MenuItem value="south">South Farm</MenuItem>
+                <MenuItem value="east">East Farm</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+          {selectedFarm && (
+            <FormControl sx={{ mr: 2, minWidth: 150 }}>
+              <InputLabel>Varietal</InputLabel>
+              <Select
+                value={selectedVarietal}
+                label="Varietal"
+                onChange={(e) => setSelectedVarietal(e.target.value)}
+              >
+                <MenuItem value="">All Varietals</MenuItem>
+                {selectedSegment === 'crops' ? (
+                  <>
+                    <MenuItem value="maize">Maize</MenuItem>
+                    <MenuItem value="wheat">Wheat</MenuItem>
+                    <MenuItem value="soybeans">Soybeans</MenuItem>
+                  </>
+                ) : (
+                  <>
+                    <MenuItem value="angus">Angus</MenuItem>
+                    <MenuItem value="hereford">Hereford</MenuItem>
+                    <MenuItem value="brahman">Brahman</MenuItem>
+                  </>
+                )}
+              </Select>
+            </FormControl>
+          )}
           <FormControl sx={{ mr: 2, minWidth: 200 }}>
             <InputLabel>Scenario</InputLabel>
             <Select
@@ -87,7 +142,7 @@ const Analytics: React.FC = () => {
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="profit"
-                    label={({ category, profit }) => `${category}: $${profit.toLocaleString()}`}
+                    label={({ category, profit }) => `${category}: R${profit.toLocaleString()}`}
                   >
                     {data.profitability.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -179,7 +234,7 @@ const Analytics: React.FC = () => {
               </Box>
               <Box sx={{ flex: '1 1 200px', minWidth: '200px', textAlign: 'center', p: 2 }}>
                 <Typography variant="h4" color="warning.main">
-                  $2.1M
+                  R2.1M
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Projected Annual Revenue

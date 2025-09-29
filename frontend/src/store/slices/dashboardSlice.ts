@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface DashboardStats {
-  totalAcres: number;
+  totalHectares: number;
   totalLivestock: number;
   monthlyRevenue: number;
   activeAlerts: number;
@@ -20,7 +20,7 @@ interface DashboardState {
 
 const initialState: DashboardState = {
   stats: {
-    totalAcres: 1250,
+    totalHectares: 506,
     totalLivestock: 485,
     monthlyRevenue: 125000,
     activeAlerts: 3,

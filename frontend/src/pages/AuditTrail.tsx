@@ -41,7 +41,7 @@ const AuditTrail: React.FC = () => {
       user: 'Sarah Johnson',
       action: 'Added new field',
       entity: 'Field West-C',
-      details: 'Created new field with 150 acres for corn planting',
+      details: 'Created new field with 60.7 hectares for corn planting',
       type: 'create',
     },
     {

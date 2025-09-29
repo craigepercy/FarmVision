@@ -14,6 +14,11 @@ interface FinanceState {
   monthlyRevenue: number;
   monthlyExpenses: number;
   vatAmount: number;
+  mtdRevenue: number;
+  mtdExpenses: number;
+  ytdRevenue: number;
+  ytdExpenses: number;
+  aiRecommendations: string[];
   loading: boolean;
 }
 
@@ -39,6 +44,15 @@ const initialState: FinanceState = {
   monthlyRevenue: 125000,
   monthlyExpenses: 85000,
   vatAmount: 8500,
+  mtdRevenue: 45000,
+  mtdExpenses: 32000,
+  ytdRevenue: 1250000,
+  ytdExpenses: 850000,
+  aiRecommendations: [
+    'Consider selling excess grain inventory before month-end to optimize VAT position',
+    'Schedule equipment purchases in Q4 to maximize VAT input credits',
+    'Current VAT liability can be reduced by R12,500 through strategic timing of sales'
+  ],
   loading: false,
 };
 
@@ -57,8 +71,17 @@ const financeSlice = createSlice({
       state.monthlyExpenses = action.payload.expenses;
       state.vatAmount = action.payload.vat;
     },
+    updateMTDYTD: (state, action: PayloadAction<{ mtdRevenue: number; mtdExpenses: number; ytdRevenue: number; ytdExpenses: number }>) => {
+      state.mtdRevenue = action.payload.mtdRevenue;
+      state.mtdExpenses = action.payload.mtdExpenses;
+      state.ytdRevenue = action.payload.ytdRevenue;
+      state.ytdExpenses = action.payload.ytdExpenses;
+    },
+    updateAIRecommendations: (state, action: PayloadAction<string[]>) => {
+      state.aiRecommendations = action.payload;
+    },
   },
 });
 
-export const { setTransactions, addTransaction, updateFinancials } = financeSlice.actions;
+export const { setTransactions, addTransaction, updateFinancials, updateMTDYTD, updateAIRecommendations } = financeSlice.actions;
 export default financeSlice.reducer;

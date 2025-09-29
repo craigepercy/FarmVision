@@ -7,6 +7,7 @@ import staffSlice from './slices/staffSlice';
 import financeSlice from './slices/financeSlice';
 import machinerySlice from './slices/machinerySlice';
 import analyticsSlice from './slices/analyticsSlice';
+import messagingSlice from './slices/messagingSlice';
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     finance: financeSlice,
     machinery: machinerySlice,
     analytics: analyticsSlice,
+    messaging: messagingSlice,
   },
 });
 
