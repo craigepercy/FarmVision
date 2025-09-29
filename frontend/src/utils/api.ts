@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { createClient } from '@supabase/supabase-js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -37,5 +38,7 @@ export const supabaseConfig = {
   url: import.meta.env.VITE_SUPABASE_URL,
   anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY,
 };
+
+export const supabase = createClient(supabaseConfig.url, supabaseConfig.anonKey);
 
 export default apiClient;
