@@ -16,6 +16,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  OutlinedInput,
+  ListItemText,
+  Checkbox,
 } from '@mui/material';
 import { Add, PhotoCamera, Assessment, Edit, Delete } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
@@ -27,7 +30,102 @@ const CropManagement: React.FC = () => {
   const dispatch = useDispatch();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedField, setSelectedField] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<any>({
+    cropInputs: {
+      herbicides: [],
+      pesticides: [],
+      fungicides: []
+    }
+  });
+
+  const cropData = {
+    'Maize': {
+      types: ['White Maize', 'Yellow Maize'],
+      varietals: ['PAN 3R-524BR', 'DKC51-44BR', 'Pannar 6964', 'SC701'],
+      grades: ['Grade 1', 'Grade 2', 'Grade 3']
+    },
+    'Wheat': {
+      types: ['Spring Wheat', 'Winter Wheat'],
+      varietals: ['SST 056', 'Elands', 'Kariega', 'Koonap'],
+      grades: ['Grade 1 (Bread)', 'Grade 2 (Feed)', 'Grade 3 (Industrial)']
+    },
+    'Barley': {
+      types: ['Malting Barley', 'Feed Barley'],
+      varietals: ['SABAR BQ10', 'Kadett'],
+      grades: ['Grade 1', 'Grade 2', 'Grade 3']
+    },
+    'Sorghum': {
+      types: ['GM - Malt', 'GH - High Tannin', 'Other classes'],
+      varietals: ['GM', 'GH', 'Class Other'],
+      grades: ['GM', 'GH', 'Class Other']
+    },
+    'Oats': {
+      types: ['Feed Oats'],
+      varietals: ['SWK001', 'Magnus'],
+      grades: ['Grade 1', 'Grade 2', 'Grade 3']
+    },
+    'Rye': {
+      types: ['Feed Rye'],
+      varietals: ['Dankowskie', 'SAB Rye'],
+      grades: ['Grade 1', 'Grade 2', 'Grade 3']
+    },
+    'Millet': {
+      types: ['Pearl Millet', 'Finger Millet'],
+      varietals: ['Pearl', 'Finger'],
+      grades: ['Grade 1', 'Grade 2', 'Grade 3']
+    },
+    'Sunflower': {
+      types: ['Oil Sunflower'],
+      varietals: ['AGSUN 8251', 'PAN 7160'],
+      grades: ['Grade 1', 'Grade 2', 'Grade 3']
+    },
+    'Soybean': {
+      types: ['GM Soybean'],
+      varietals: ['PAN 1623', 'US EUREKA'],
+      grades: ['Grade 1', 'Grade 2', 'Grade 3']
+    },
+    'Canola': {
+      types: ['Hybrid Canola'],
+      varietals: ['Alpha', 'Hybrid 462'],
+      grades: ['Grade 1', 'Grade 2', 'Grade 3']
+    },
+    'Groundnuts': {
+      types: ['Peanuts'],
+      varietals: ['ARC K6', 'Akwa', 'GP 033'],
+      grades: ['Choice (Grade 1)', 'Splits (Grade 2)', 'Oil Stock (Grade 3)']
+    }
+  };
+
+  const herbicides = [
+    'Atrazine (maize, sorghum)',
+    'Alachlor (maize, soybeans)',
+    'Terbufos (maize, sorghum, sunflower)'
+  ];
+
+  const pesticides = [
+    'Deltamethrin-based products (K-Obiol® for silos)',
+    'Methomyl 900 SP (contact insecticide for maize)',
+    'Chlorpyrifos products (maize, wheat, potatoes)',
+    'Emamectin benzoate products (Proclaim, Emma, Warlock)',
+    'Indoxacarb/Novaluron blends (Plemax, Doxstar Flo)',
+    'Malathion (for aphids, general pests)',
+    'Pyrinex 480 EC (chlorpyrifos)'
+  ];
+
+  const fungicides = [
+    'Chlorothalonil (barley, wheat)',
+    'Propiconazole (wheat leaf rust)',
+    'Mancozeb',
+    'Tebuconazole'
+  ];
+
+  const getAvailableVarietals = (cropType: string) => {
+    return cropData[cropType as keyof typeof cropData]?.varietals || [];
+  };
+
+  const getAvailableGrades = (cropType: string) => {
+    return cropData[cropType as keyof typeof cropData]?.grades || ['Grade A', 'Grade B', 'Grade C'];
+  };
 
   const handleUploadPhoto = (fieldId: string) => {
     const input = document.createElement('input');
@@ -65,7 +163,15 @@ AI Recommendation: ${analysisResults.cropHealth > 85 ? 'Excellent conditions! Co
 
   const handleEditField = (field: any) => {
     setSelectedField(field);
-    setFormData(field);
+    setFormData({
+      ...field,
+      cropInputs: {
+        herbicides: [],
+        pesticides: [],
+        fungicides: [],
+        ...field.cropInputs
+      }
+    });
     setEditDialogOpen(true);
   };
 
@@ -288,20 +394,38 @@ AI Recommendation: ${analysisResults.cropHealth > 85 ? 'Excellent conditions! Co
 
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
               <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                <TextField
-                  fullWidth
-                  label="Crop Type"
-                  value={formData.crop || ''}
-                  onChange={(e) => setFormData({...formData, crop: e.target.value})}
-                />
+                <FormControl fullWidth>
+                  <InputLabel>Crop Type</InputLabel>
+                  <Select
+                    value={formData.crop || ''}
+                    onChange={(e) => {
+                      const newCrop = e.target.value;
+                      setFormData({
+                        ...formData, 
+                        crop: newCrop,
+                        varietal: ''
+                      });
+                    }}
+                  >
+                    {Object.keys(cropData).map((crop) => (
+                      <MenuItem key={crop} value={crop}>{crop}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Box>
               <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                <TextField
-                  fullWidth
-                  label="Varietal"
-                  value={formData.varietal || ''}
-                  onChange={(e) => setFormData({...formData, varietal: e.target.value})}
-                />
+                <FormControl fullWidth>
+                  <InputLabel>Varietal</InputLabel>
+                  <Select
+                    value={formData.varietal || ''}
+                    onChange={(e) => setFormData({...formData, varietal: e.target.value})}
+                    disabled={!formData.crop}
+                  >
+                    {getAvailableVarietals(formData.crop).map((varietal) => (
+                      <MenuItem key={varietal} value={varietal}>{varietal}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Box>
             </Box>
 
@@ -348,7 +472,7 @@ AI Recommendation: ${analysisResults.cropHealth > 85 ? 'Excellent conditions! Co
 
             <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Crop Inputs</Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-              <Box sx={{ flex: '1 1 150px', minWidth: '150px' }}>
+              <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
                 <TextField
                   fullWidth
                   label="Fertilizer Type"
@@ -356,15 +480,7 @@ AI Recommendation: ${analysisResults.cropHealth > 85 ? 'Excellent conditions! Co
                   onChange={(e) => setFormData({...formData, cropInputs: {...formData.cropInputs, fertilizer: e.target.value}})}
                 />
               </Box>
-              <Box sx={{ flex: '1 1 150px', minWidth: '150px' }}>
-                <TextField
-                  fullWidth
-                  label="Pesticides Used"
-                  value={formData.cropInputs?.pesticides || ''}
-                  onChange={(e) => setFormData({...formData, cropInputs: {...formData.cropInputs, pesticides: e.target.value}})}
-                />
-              </Box>
-              <Box sx={{ flex: '1 1 150px', minWidth: '150px' }}>
+              <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
                 <TextField
                   fullWidth
                   label="Irrigation (mm/year)"
@@ -372,6 +488,105 @@ AI Recommendation: ${analysisResults.cropHealth > 85 ? 'Excellent conditions! Co
                   value={formData.cropInputs?.irrigation || ''}
                   onChange={(e) => setFormData({...formData, cropInputs: {...formData.cropInputs, irrigation: parseInt(e.target.value)}})}
                 />
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+              <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                <FormControl fullWidth>
+                  <InputLabel>Herbicides</InputLabel>
+                  <Select
+                    multiple
+                    value={(formData.cropInputs && Array.isArray(formData.cropInputs.herbicides)) ? formData.cropInputs.herbicides : []}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      cropInputs: {
+                        ...formData.cropInputs, 
+                        herbicides: typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value
+                      }
+                    })}
+                    input={<OutlinedInput label="Herbicides" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {Array.isArray(selected) ? selected.map((value: string) => (
+                          <Chip key={value} label={value.split(' (')[0]} size="small" />
+                        )) : null}
+                      </Box>
+                    )}
+                  >
+                    {herbicides.map((herbicide) => (
+                      <MenuItem key={herbicide} value={herbicide}>
+                        <Checkbox checked={(formData.cropInputs?.herbicides || []).indexOf(herbicide) > -1} />
+                        <ListItemText primary={herbicide} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                <FormControl fullWidth>
+                  <InputLabel>Pesticides</InputLabel>
+                  <Select
+                    multiple
+                    value={(formData.cropInputs && Array.isArray(formData.cropInputs.pesticides)) ? formData.cropInputs.pesticides : []}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      cropInputs: {
+                        ...formData.cropInputs, 
+                        pesticides: typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value
+                      }
+                    })}
+                    input={<OutlinedInput label="Pesticides" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {Array.isArray(selected) ? selected.map((value: string) => (
+                          <Chip key={value} label={value.split(' (')[0]} size="small" />
+                        )) : null}
+                      </Box>
+                    )}
+                  >
+                    {pesticides.map((pesticide) => (
+                      <MenuItem key={pesticide} value={pesticide}>
+                        <Checkbox checked={(formData.cropInputs?.pesticides || []).indexOf(pesticide) > -1} />
+                        <ListItemText primary={pesticide} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+              <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                <FormControl fullWidth>
+                  <InputLabel>Fungicides</InputLabel>
+                  <Select
+                    multiple
+                    value={(formData.cropInputs && Array.isArray(formData.cropInputs.fungicides)) ? formData.cropInputs.fungicides : []}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      cropInputs: {
+                        ...formData.cropInputs, 
+                        fungicides: typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value
+                      }
+                    })}
+                    input={<OutlinedInput label="Fungicides" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {Array.isArray(selected) ? selected.map((value: string) => (
+                          <Chip key={value} label={value} size="small" />
+                        )) : null}
+                      </Box>
+                    )}
+                  >
+                    {fungicides.map((fungicide) => (
+                      <MenuItem key={fungicide} value={fungicide}>
+                        <Checkbox checked={(formData.cropInputs?.fungicides || []).indexOf(fungicide) > -1} />
+                        <ListItemText primary={fungicide} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Box>
             </Box>
 
@@ -395,17 +610,16 @@ AI Recommendation: ${analysisResults.cropHealth > 85 ? 'Excellent conditions! Co
                 <FormControl fullWidth>
                   <InputLabel>2023 Grade</InputLabel>
                   <Select
-                    value={formData.historicYields?.[0]?.grade || 'A'}
+                    value={formData.historicYields?.[0]?.grade || ''}
                     onChange={(e) => {
-                      const yields = formData.historicYields || [{year: 2023, yield: 0, grade: 'A'}];
+                      const yields = formData.historicYields || [{year: 2023, yield: 0, grade: ''}];
                       yields[0] = {...yields[0], grade: e.target.value};
                       setFormData({...formData, historicYields: yields});
                     }}
                   >
-                    <MenuItem value="A">Grade A</MenuItem>
-                    <MenuItem value="B">Grade B</MenuItem>
-                    <MenuItem value="C">Grade C</MenuItem>
-                    <MenuItem value="D">Grade D</MenuItem>
+                    {getAvailableGrades(formData.crop).map((grade) => (
+                      <MenuItem key={grade} value={grade}>{grade}</MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Box>
@@ -428,18 +642,17 @@ AI Recommendation: ${analysisResults.cropHealth > 85 ? 'Excellent conditions! Co
                 <FormControl fullWidth>
                   <InputLabel>2022 Grade</InputLabel>
                   <Select
-                    value={formData.historicYields?.[1]?.grade || 'A'}
+                    value={formData.historicYields?.[1]?.grade || ''}
                     onChange={(e) => {
-                      const yields = formData.historicYields || [{year: 2023, yield: 0, grade: 'A'}, {year: 2022, yield: 0, grade: 'A'}];
-                      if (yields.length < 2) yields.push({year: 2022, yield: 0, grade: 'A'});
+                      const yields = formData.historicYields || [{year: 2023, yield: 0, grade: ''}, {year: 2022, yield: 0, grade: ''}];
+                      if (yields.length < 2) yields.push({year: 2022, yield: 0, grade: ''});
                       yields[1] = {...yields[1], grade: e.target.value};
                       setFormData({...formData, historicYields: yields});
                     }}
                   >
-                    <MenuItem value="A">Grade A</MenuItem>
-                    <MenuItem value="B">Grade B</MenuItem>
-                    <MenuItem value="C">Grade C</MenuItem>
-                    <MenuItem value="D">Grade D</MenuItem>
+                    {getAvailableGrades(formData.crop).map((grade) => (
+                      <MenuItem key={grade} value={grade}>{grade}</MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Box>
