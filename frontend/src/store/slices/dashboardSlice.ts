@@ -14,6 +14,7 @@ interface DashboardState {
     message: string;
     type: 'info' | 'warning' | 'error';
     timestamp: string;
+    read?: boolean;
   }>;
   loading: boolean;
 }
@@ -55,8 +56,14 @@ const dashboardSlice = createSlice({
     removeNotification: (state, action: PayloadAction<string>) => {
       state.notifications = state.notifications.filter(n => n.id !== action.payload);
     },
+    markNotificationAsRead: (state, action: PayloadAction<string>) => {
+      const notification = state.notifications.find(n => n.id === action.payload);
+      if (notification) {
+        notification.read = true;
+      }
+    },
   },
 });
 
-export const { updateStats, addNotification, removeNotification } = dashboardSlice.actions;
+export const { updateStats, addNotification, removeNotification, markNotificationAsRead } = dashboardSlice.actions;
 export default dashboardSlice.reducer;

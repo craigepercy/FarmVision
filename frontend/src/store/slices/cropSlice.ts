@@ -14,6 +14,21 @@ interface Field {
   cropInputs: { fertilizer: string; pesticides: string; irrigation: number };
   historicYields: Array<{ year: number; yield: number; grade: string }>;
   lastUpdated: string;
+  photos?: Array<{
+    id: string;
+    fieldId: string;
+    filename: string;
+    url: string;
+    thumbnail: string;
+    uploadDate: string;
+    analysis: {
+      cropHealth: number;
+      pestDetection: string;
+      waterStress: string;
+      growthHeight: string;
+      recommendations: string[];
+    };
+  }>;
 }
 
 interface CropState {

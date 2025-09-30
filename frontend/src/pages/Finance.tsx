@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -13,14 +13,124 @@ import {
   Paper,
   Button,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { Add, GetApp, SmartToy, CalendarToday } from '@mui/icons-material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
+import { addTransaction } from '../store/slices/financeSlice';
 
 const Finance: React.FC = () => {
   const { transactions, monthlyRevenue, monthlyExpenses, vatAmount } = useSelector((state: RootState) => state.finance);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+
+  const isOwner = user?.role === 'owner';
+  const canViewDashboards = isOwner;
+  const canSubmitInvoices = ['owner', 'manager', 'staff'].includes(user?.role || '');
+  const [addTransactionOpen, setAddTransactionOpen] = useState(false);
+  const [transactionForm, setTransactionForm] = useState({
+    description: '',
+    amount: 0,
+    type: 'income' as 'income' | 'expense',
+    category: 'crops' as 'crops' | 'cattle',
+    farm: '',
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  const handleAddTransaction = () => {
+    const newTransaction = {
+      id: `trans${Date.now()}`,
+      ...transactionForm,
+      amount: transactionForm.type === 'expense' ? -Math.abs(transactionForm.amount) : Math.abs(transactionForm.amount),
+      date: transactionForm.date,
+      status: 'completed'
+    };
+    dispatch(addTransaction(newTransaction));
+    setAddTransactionOpen(false);
+    setTransactionForm({
+      description: '',
+      amount: 0,
+      type: 'income',
+      category: 'crops',
+      farm: '',
+      date: new Date().toISOString().split('T')[0]
+    });
+  };
+
+  const handleExportReport = (period: 'MTD' | 'YTD' = 'MTD', farmFilter?: string, categoryFilter?: 'crops' | 'cattle') => {
+    const now = new Date();
+    const startDate = period === 'MTD' 
+      ? new Date(now.getFullYear(), now.getMonth(), 1)
+      : new Date(now.getFullYear(), 0, 1);
+    
+    let filteredTransactions = transactions.filter(t => new Date(t.date) >= startDate);
+    
+    if (farmFilter) {
+      filteredTransactions = filteredTransactions.filter(t => t.farm === farmFilter);
+    }
+    
+    if (categoryFilter) {
+      filteredTransactions = filteredTransactions.filter(t => t.category === categoryFilter);
+    }
+
+    const csvData = filteredTransactions.map(t => ({
+      Date: new Date(t.date).toLocaleDateString(),
+      Description: t.description,
+      Amount: `R${Math.abs(t.amount).toLocaleString()}`,
+      Type: t.amount > 0 ? 'Income' : 'Expense',
+      Category: t.category || 'General',
+      Farm: t.farm || 'All Farms',
+      Status: t.status || 'Completed'
+    }));
+
+    const csvContent = [
+      Object.keys(csvData[0]).join(','),
+      ...csvData.map(row => Object.values(row).map(val => `"${val}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const filterSuffix = farmFilter ? `-${farmFilter}` : '';
+    const categorySuffix = categoryFilter ? `-${categoryFilter}` : '';
+    a.download = `farm-financial-report-${period}${filterSuffix}${categorySuffix}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  if (user?.role !== 'owner') {
+    return (
+      <Box>
+        <Typography variant="h4" gutterBottom>
+          Finance - Submit Receipts
+        </Typography>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Submit Invoice/Receipt
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Upload invoices and receipts for your assigned farms.
+            </Typography>
+            <Button variant="contained" startIcon={<Add />}>
+              Upload Receipt
+            </Button>
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  }
 
   const mockChartData = [
     { month: 'Jan', revenue: 85000, expenses: 65000 },
@@ -52,38 +162,52 @@ const Finance: React.FC = () => {
           Finance Dashboard
         </Typography>
         <Box>
-          <Button variant="outlined" startIcon={<GetApp />} sx={{ mr: 1 }}>
-            Export Report
-          </Button>
-          <Button variant="contained" startIcon={<Add />}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<GetApp />}
+              onClick={() => handleExportReport('MTD')}
+            >
+              Export MTD
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<GetApp />}
+              onClick={() => handleExportReport('YTD')}
+            >
+              Export YTD
+            </Button>
+          </Box>
+          <Button variant="contained" startIcon={<Add />} onClick={() => setAddTransactionOpen(true)}>
             Add Transaction
           </Button>
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
-        <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-          <Card sx={{
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            color: 'white',
-            borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(16, 185, 129, 0.3)',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: '0 20px 40px rgba(16, 185, 129, 0.4)',
-            }
-          }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography sx={{ opacity: 0.9, fontWeight: 500, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.5px' }} gutterBottom>
-                Monthly Revenue
-              </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                R{monthlyRevenue.toLocaleString()}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
+      {canViewDashboards ? (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
+          <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
+            <Card sx={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: 'white',
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(16, 185, 129, 0.3)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 20px 40px rgba(16, 185, 129, 0.4)',
+              }
+            }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography sx={{ opacity: 0.9, fontWeight: 500, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.5px' }} gutterBottom>
+                  Monthly Revenue
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                  R{monthlyRevenue.toLocaleString()}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
 
         <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
           <Card sx={{
@@ -158,10 +282,33 @@ const Finance: React.FC = () => {
               </Typography>
             </CardContent>
           </Card>
+          </Box>
         </Box>
-      </Box>
+      ) : (
+        <Card sx={{ mb: 3 }}>
+          <CardContent sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Access Restricted
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+              Financial dashboards and detailed data are only available to users with Owner role.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {canSubmitInvoices ? 'You can submit invoices and receipts for your assigned farms.' : 'Contact your administrator for access.'}
+            </Typography>
+            {canSubmitInvoices && (
+              <Box sx={{ mt: 2 }}>
+                <Button variant="contained" startIcon={<Add />}>
+                  Submit Invoice/Receipt
+                </Button>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* MTD/YTD Section */}
+      {canViewDashboards && (
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '1 1 400px', minWidth: '400px' }}>
           <Card>
@@ -241,8 +388,10 @@ const Finance: React.FC = () => {
           </Card>
         </Box>
       </Box>
+      )}
 
       {/* AI Recommendations Section */}
+      {canViewDashboards && (
       <Box sx={{ mb: 3 }}>
         <Card>
           <CardContent>
@@ -281,7 +430,9 @@ const Finance: React.FC = () => {
           </CardContent>
         </Card>
       </Box>
+      )}
 
+      {canViewDashboards && (
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
         <Box sx={{ flex: '2 1 400px', minWidth: '400px' }}>
           <Card>
@@ -331,6 +482,7 @@ const Finance: React.FC = () => {
           </Card>
         </Box>
       </Box>
+      )}
 
       <Box>
           <Card>
@@ -380,6 +532,66 @@ const Finance: React.FC = () => {
             </CardContent>
           </Card>
       </Box>
+
+      {/* Add Transaction Dialog */}
+      <Dialog open={addTransactionOpen} onClose={() => setAddTransactionOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add New Transaction</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              label="Description"
+              value={transactionForm.description}
+              onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Amount (ZAR)"
+              type="number"
+              value={transactionForm.amount}
+              onChange={(e) => setTransactionForm({ ...transactionForm, amount: parseFloat(e.target.value) || 0 })}
+              fullWidth
+            />
+            <FormControl fullWidth>
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={transactionForm.type}
+                onChange={(e) => setTransactionForm({ ...transactionForm, type: e.target.value as 'income' | 'expense' })}
+              >
+                <MenuItem value="income">Income</MenuItem>
+                <MenuItem value="expense">Expense</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={transactionForm.category}
+                onChange={(e) => setTransactionForm({ ...transactionForm, category: e.target.value as 'crops' | 'cattle' })}
+              >
+                <MenuItem value="crops">Crops</MenuItem>
+                <MenuItem value="cattle">Cattle</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Farm"
+              value={transactionForm.farm}
+              onChange={(e) => setTransactionForm({ ...transactionForm, farm: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Date"
+              type="date"
+              value={transactionForm.date}
+              onChange={(e) => setTransactionForm({ ...transactionForm, date: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddTransactionOpen(false)}>Cancel</Button>
+          <Button onClick={handleAddTransaction} variant="contained">Add Transaction</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

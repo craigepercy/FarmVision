@@ -8,6 +8,11 @@ interface Staff {
   phone: string;
   status: 'active' | 'inactive';
   assignedTasks: number;
+  assignedFarms?: string[];
+  employeeNumber?: string;
+  dateOfBirth?: string;
+  idNumber?: string;
+  certifications?: string[];
 }
 
 interface Task {
@@ -18,6 +23,14 @@ interface Task {
   status: 'pending' | 'in-progress' | 'completed';
   priority: 'low' | 'medium' | 'high';
   dueDate: string;
+  createdDate: string;
+  requiresProof: boolean;
+  farm?: string;
+  category?: 'general' | 'crops' | 'cattle' | 'maintenance';
+  completionProof?: {
+    filename: string;
+    uploadDate: string;
+  } | null;
 }
 
 interface StaffState {
@@ -57,6 +70,9 @@ const initialState: StaffState = {
       status: 'pending',
       priority: 'high',
       dueDate: new Date().toISOString(),
+      createdDate: new Date().toISOString(),
+      requiresProof: true,
+      completionProof: null,
     },
   ],
   selectedStaff: null,
@@ -76,8 +92,35 @@ const staffSlice = createSlice({
     selectStaff: (state, action: PayloadAction<Staff>) => {
       state.selectedStaff = action.payload;
     },
+    addStaff: (state, action: PayloadAction<Staff>) => {
+      state.staff.push(action.payload);
+    },
+    updateStaff: (state, action: PayloadAction<Staff>) => {
+      const index = state.staff.findIndex(s => s.id === action.payload.id);
+      if (index !== -1) {
+        state.staff[index] = action.payload;
+      }
+    },
+    addTask: (state, action: PayloadAction<Task>) => {
+      state.tasks.push(action.payload);
+      const staff = state.staff.find(s => s.id === action.payload.assignedTo);
+      if (staff) {
+        staff.assignedTasks += 1;
+      }
+    },
+    completeTask: (state, action: PayloadAction<{ taskId: string; proof: any }>) => {
+      const task = state.tasks.find(t => t.id === action.payload.taskId);
+      if (task) {
+        task.status = 'completed';
+        task.completionProof = action.payload.proof;
+        const staff = state.staff.find(s => s.id === task.assignedTo);
+        if (staff) {
+          staff.assignedTasks = Math.max(0, staff.assignedTasks - 1);
+        }
+      }
+    },
   },
 });
 
-export const { setStaff, setTasks, selectStaff } = staffSlice.actions;
+export const { setStaff, setTasks, selectStaff, addStaff, updateStaff, addTask, completeTask } = staffSlice.actions;
 export default staffSlice.reducer;

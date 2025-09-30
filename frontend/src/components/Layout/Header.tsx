@@ -25,28 +25,56 @@ const Header: React.FC = () => {
   };
 
   return (
-    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+    <AppBar 
+      position="fixed" 
+      sx={{ 
+        zIndex: (theme) => theme.zIndex.drawer + 1, 
+        width: '100%',
+        '& .MuiToolbar-root': {
+          minHeight: { xs: 56, sm: 64 },
+          px: { xs: 1, sm: 2 }
+        }
+      }}
+    >
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography 
+          variant="h6" 
+          component="div" 
+          sx={{ 
+            flexGrow: 1,
+            fontSize: { xs: '1rem', sm: '1.25rem' },
+            fontWeight: 600
+          }}
+        >
           FarmVision
         </Typography>
         
-        <IconButton color="inherit">
+        <IconButton 
+          color="inherit"
+          size="medium"
+          sx={{ 
+            p: { xs: 0.5, sm: 1 },
+            '& .MuiBadge-badge': {
+              fontSize: { xs: '0.625rem', sm: '0.75rem' }
+            }
+          }}
+        >
           <Badge badgeContent={notifications.length} color="error">
-            <Notifications />
+            <Notifications sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
           </Badge>
         </IconButton>
 
         <div>
           <IconButton
-            size="large"
+            size="medium"
             aria-label="account of current user"
             aria-controls="menu-appbar"
             aria-haspopup="true"
             onClick={handleMenu}
             color="inherit"
+            sx={{ p: { xs: 0.5, sm: 1 } }}
           >
-            <AccountCircle />
+            <AccountCircle sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }} />
           </IconButton>
           <Menu
             id="menu-appbar"
@@ -62,18 +90,32 @@ const Header: React.FC = () => {
             }}
             open={Boolean(anchorEl)}
             onClose={handleClose}
+            PaperProps={{
+              sx: {
+                maxWidth: { xs: '90vw', sm: 'auto' },
+                mt: 1
+              }
+            }}
           >
             <MenuItem onClick={handleClose}>
-              <Typography>{user?.name}</Typography>
+              <Typography sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                {user?.name}
+              </Typography>
             </MenuItem>
             <MenuItem onClick={handleClose}>
-              <Typography variant="body2" color="text.secondary">
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+              >
                 {user?.role}
               </Typography>
             </MenuItem>
             <MenuItem onClick={handleLogout}>
-              <ExitToApp sx={{ mr: 1 }} />
-              Logout
+              <ExitToApp sx={{ mr: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }} />
+              <Typography sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                Logout
+              </Typography>
             </MenuItem>
           </Menu>
         </div>

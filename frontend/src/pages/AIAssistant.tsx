@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -17,18 +17,35 @@ import {
   Chip,
 } from '@mui/material';
 import { SmartToy, Send, Close, Lightbulb } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
 const AIAssistant: React.FC = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [, setLastRefresh] = useState(new Date());
+  
+  const { fields } = useSelector((state: RootState) => state.crop);
+  const { cattle, camps } = useSelector((state: RootState) => state.cattle);
+  const { transactions } = useSelector((state: RootState) => state.finance);
+  const { equipment } = useSelector((state: RootState) => state.machinery);
+
   const [chatHistory, setChatHistory] = useState([
     {
       id: '1',
       sender: 'ai',
-      message: 'Hello! I\'m your FarmVision AI Assistant. How can I help you optimize your farm operations today?',
+      message: 'Hello! I\'m your FarmVision AI Assistant with access to your real farm data. How can I help you optimize your operations today?',
       timestamp: new Date().toISOString(),
     },
   ]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLastRefresh(new Date());
+    }, 3 * 60 * 60 * 1000); // 3 hours
+
+    return () => clearInterval(interval);
+  }, []);
 
   const scenarios = [
     'Optimize crop rotation for next season',
@@ -37,6 +54,37 @@ const AIAssistant: React.FC = () => {
     'Weather impact on yield forecast',
     'Cost optimization strategies',
   ];
+
+  const generateAIResponse = (userMessage: string) => {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    if (lowerMessage.includes('crop') || lowerMessage.includes('field')) {
+      const avgHealth = fields.reduce((sum, f) => sum + f.healthScore, 0) / fields.length;
+      return `Based on your ${fields.length} fields, average crop health is ${avgHealth.toFixed(1)}%. ${avgHealth > 80 ? 'Excellent conditions!' : 'Consider reviewing irrigation and nutrient management.'} Your best performing field is ${fields.sort((a, b) => b.healthScore - a.healthScore)[0]?.name}.`;
+    }
+    
+    if (lowerMessage.includes('cattle') || lowerMessage.includes('livestock')) {
+      const healthyCattle = cattle.filter(c => c.healthStatus === 'healthy').length;
+      return `You have ${cattle.length} cattle across ${camps.length} camps. ${healthyCattle} are healthy (${((healthyCattle/cattle.length)*100).toFixed(1)}%). ${cattle.length - healthyCattle > 0 ? `${cattle.length - healthyCattle} need attention.` : 'All cattle are in good health!'}`;
+    }
+    
+    if (lowerMessage.includes('finance') || lowerMessage.includes('money') || lowerMessage.includes('profit')) {
+      const totalIncome = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+      const totalExpenses = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      return `Your current financial position: R${totalIncome.toLocaleString()} income, R${totalExpenses.toLocaleString()} expenses. Net profit: R${(totalIncome - totalExpenses).toLocaleString()}. ${totalIncome > totalExpenses ? 'Strong performance!' : 'Consider cost optimization strategies.'}`;
+    }
+    
+    if (lowerMessage.includes('equipment') || lowerMessage.includes('machinery')) {
+      const availableEquip = equipment.filter(e => e.status === 'Available').length;
+      const maintenanceDue = equipment.filter(e => {
+        const daysUntil = Math.ceil((new Date(e.nextMaintenance).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+        return daysUntil <= 7;
+      }).length;
+      return `Equipment status: ${availableEquip}/${equipment.length} available. ${maintenanceDue > 0 ? `${maintenanceDue} units need maintenance within 7 days.` : 'All equipment maintenance is up to date.'}`;
+    }
+    
+    return `Based on your current farm data: ${fields.length} fields, ${cattle.length} cattle, ${equipment.length} equipment units. I can provide specific insights about crops, livestock, finances, or equipment. What would you like to know more about?`;
+  };
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -54,7 +102,7 @@ const AIAssistant: React.FC = () => {
       const aiResponse = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        message: `I understand you're asking about "${message}". Based on your farm data, I recommend analyzing your current metrics and implementing data-driven strategies. Would you like me to run a detailed analysis?`,
+        message: generateAIResponse(message),
         timestamp: new Date().toISOString(),
       };
       setChatHistory(prev => [...prev, aiResponse]);

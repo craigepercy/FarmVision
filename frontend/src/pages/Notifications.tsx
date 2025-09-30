@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Card,
@@ -13,6 +13,10 @@ import {
   Button,
   Badge,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -73,6 +77,9 @@ const Notifications: React.FC = () => {
     },
   ]);
 
+  const [selectedNotification, setSelectedNotification] = useState<any>(null);
+  const [notificationDetailOpen, setNotificationDetailOpen] = useState(false);
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'warning': return <Warning />;
@@ -103,8 +110,8 @@ const Notifications: React.FC = () => {
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notif =>
+    setNotifications(prev => 
+      prev.map(notif => 
         notif.id === id ? { ...notif, read: true } : notif
       )
     );
@@ -115,9 +122,18 @@ const Notifications: React.FC = () => {
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev =>
+    setNotifications(prev => 
       prev.map(notif => ({ ...notif, read: true }))
     );
+  };
+
+  const handleNotificationClick = (notification: any) => {
+    setSelectedNotification(notification);
+    setNotificationDetailOpen(true);
+    
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -211,7 +227,10 @@ const Notifications: React.FC = () => {
                       bgcolor: notification.read ? 'transparent' : 'action.hover',
                       borderRadius: 1,
                       mb: 1,
+                      cursor: 'pointer',
+                      '&:hover': { backgroundColor: 'action.selected' }
                     }}
+                    onClick={() => handleNotificationClick(notification)}
                   >
                     <ListItemAvatar>
                       <Avatar sx={{ bgcolor: `${getNotificationColor(notification.type)}.main` }}>
@@ -271,6 +290,63 @@ const Notifications: React.FC = () => {
             </CardContent>
           </Card>
       </Box>
+
+      {/* Notification Detail Dialog */}
+      <Dialog 
+        open={notificationDetailOpen} 
+        onClose={() => setNotificationDetailOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: selectedNotification ? getNotificationColor(selectedNotification.type) : 'grey.500' }}>
+              {selectedNotification ? getNotificationIcon(selectedNotification.type) : <NotificationsIcon />}
+            </Avatar>
+            <Box>
+              <Typography variant="h6">{selectedNotification?.title}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {selectedNotification ? new Date(selectedNotification.timestamp).toLocaleString() : ''}
+              </Typography>
+            </Box>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body1" paragraph>
+              {selectedNotification?.message}
+            </Typography>
+            
+            {selectedNotification?.details && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="h6" gutterBottom>Additional Details</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {selectedNotification.details}
+                </Typography>
+              </Box>
+            )}
+            
+            <Box sx={{ mt: 3, display: 'flex', gap: 1 }}>
+              <Chip
+                label={selectedNotification?.priority}
+                color={selectedNotification ? getPriorityColor(selectedNotification.priority) : 'default'}
+                size="small"
+              />
+              <Chip
+                label={selectedNotification?.type}
+                variant="outlined"
+                size="small"
+              />
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setNotificationDetailOpen(false)}>Close</Button>
+          <Button variant="contained" onClick={() => setNotificationDetailOpen(false)}>
+            Mark as Resolved
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

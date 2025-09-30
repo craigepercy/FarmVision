@@ -78,8 +78,11 @@ const machinerySlice = createSlice({
         state.equipment[index].location = action.payload.location;
       }
     },
+    addEquipment: (state, action: PayloadAction<Equipment>) => {
+      state.equipment.push(action.payload);
+    },
   },
 });
 
-export const { setEquipment, selectEquipment, updateEquipment, updateEquipmentStatus, updateEquipmentLocation } = machinerySlice.actions;
+export const { setEquipment, selectEquipment, updateEquipment, updateEquipmentStatus, updateEquipmentLocation, addEquipment } = machinerySlice.actions;
 export default machinerySlice.reducer;

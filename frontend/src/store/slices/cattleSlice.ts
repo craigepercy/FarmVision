@@ -21,14 +21,36 @@ interface Cattle {
   campId: string;
   lastCheckup: string;
   selected?: boolean;
+  sex?: string;
+  vitals?: {
+    temperature: number;
+    heartRate: number;
+    respiratoryRate: number;
+  };
+  healthNotes?: string;
+  photos?: Array<{
+    id: string;
+    cattleId: string;
+    filename: string;
+    url: string;
+    uploadDate: string;
+    notes: string;
+  }>;
+  location?: { lat: number; lng: number; address: string };
 }
 
 interface CattleCamp {
   id: string;
   name: string;
+  type?: string;
   location: { lat: number; lng: number; address: string };
   capacity: number;
   currentCount: number;
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+  healthStatus?: string;
+  lastInspection?: string;
 }
 
 interface CattleState {

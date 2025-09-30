@@ -20,18 +20,37 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  TextField,
 } from '@mui/material';
 import { Add, Build, Schedule, Person, Warning, Edit, LocationOn, SmartToy } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
-import { updateEquipmentStatus } from '../store/slices/machinerySlice';
+import { updateEquipmentStatus, addEquipment, updateEquipment } from '../store/slices/machinerySlice';
 
 const Machinery: React.FC = () => {
   const { equipment } = useSelector((state: RootState) => state.machinery);
   const dispatch = useDispatch();
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<any>(null);
+  const [maintenanceLogOpen, setMaintenanceLogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<'In-Use' | 'Available' | 'Unavailable'>('Available');
+  const [addEquipmentOpen, setAddEquipmentOpen] = useState(false);
+  const [addMaintenanceOpen, setAddMaintenanceOpen] = useState(false);
+  const [equipmentForm, setEquipmentForm] = useState({
+    name: '',
+    type: '',
+    location: '',
+    hoursUsed: 0,
+    nextMaintenance: ''
+  });
+  const [maintenanceForm, setMaintenanceForm] = useState({
+    date: '',
+    type: '',
+    description: '',
+    cost: '',
+    technician: '',
+    nextServiceDate: ''
+  });
 
   const handleStatusChange = (equipment: any) => {
     setSelectedEquipment(equipment);
@@ -44,6 +63,62 @@ const Machinery: React.FC = () => {
       dispatch(updateEquipmentStatus({ id: selectedEquipment.id, status: newStatus }));
       setStatusDialogOpen(false);
       setSelectedEquipment(null);
+    }
+  };
+
+  const handleAddEquipment = () => {
+    const newEquipment = {
+      id: `equip${Date.now()}`,
+      name: equipmentForm.name,
+      type: equipmentForm.type,
+      status: 'Available' as const,
+      assignedTo: null,
+      location: { lat: -25.7479, lng: 28.2293, name: equipmentForm.location },
+      lastMaintenance: new Date().toISOString(),
+      nextMaintenance: equipmentForm.nextMaintenance || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      hoursUsed: equipmentForm.hoursUsed,
+      aiRecommendation: 'New equipment - schedule initial inspection'
+    };
+    dispatch(addEquipment(newEquipment));
+    setAddEquipmentOpen(false);
+    setEquipmentForm({
+      name: '',
+      type: '',
+      location: '',
+      hoursUsed: 0,
+      nextMaintenance: ''
+    });
+  };
+
+  const handleMaintenanceLog = (equipment: any) => {
+    setSelectedEquipment(equipment);
+    setMaintenanceLogOpen(true);
+  };
+
+  const handleAddMaintenance = () => {
+    if (selectedEquipment) {
+      const newMaintenance = {
+        id: `maintenance${Date.now()}`,
+        equipmentId: selectedEquipment.id,
+        ...maintenanceForm,
+        createdDate: new Date().toISOString()
+      };
+      
+      dispatch(updateEquipment({
+        ...selectedEquipment,
+        maintenanceHistory: [...(selectedEquipment.maintenanceHistory || []), newMaintenance],
+        lastMaintenance: maintenanceForm.date
+      }));
+      
+      setAddMaintenanceOpen(false);
+      setMaintenanceForm({
+        date: '',
+        type: '',
+        description: '',
+        cost: '',
+        technician: '',
+        nextServiceDate: ''
+      });
     }
   };
 
@@ -65,7 +140,14 @@ const Machinery: React.FC = () => {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+      <Box 
+        display="flex" 
+        flexDirection={{ xs: 'column', sm: 'row' }}
+        justifyContent="space-between" 
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        mb={4}
+        gap={2}
+      >
         <Typography 
           variant="h4"
           sx={{
@@ -78,7 +160,12 @@ const Machinery: React.FC = () => {
         >
           Machinery Management
         </Typography>
-        <Button variant="contained" startIcon={<Add />}>
+        <Button 
+          variant="contained" 
+          startIcon={<Add />} 
+          onClick={() => setAddEquipmentOpen(true)}
+          sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
+        >
           Add Equipment
         </Button>
       </Box>
@@ -226,7 +313,7 @@ const Machinery: React.FC = () => {
                 </Box>
 
                 <Box display="flex" gap={1} mt={2}>
-                  <Button size="small" startIcon={<Build />}>
+                  <Button size="small" startIcon={<Build />} onClick={() => handleMaintenanceLog(item)}>
                     Maintenance Log
                   </Button>
                   <Button size="small" variant="outlined">
@@ -299,6 +386,209 @@ const Machinery: React.FC = () => {
         <DialogActions>
           <Button onClick={() => setStatusDialogOpen(false)}>Cancel</Button>
           <Button onClick={handleSaveStatus} variant="contained">Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Equipment Dialog */}
+      <Dialog open={addEquipmentOpen} onClose={() => setAddEquipmentOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add New Equipment</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              label="Equipment Name"
+              value={equipmentForm.name}
+              onChange={(e) => setEquipmentForm({ ...equipmentForm, name: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Type"
+              value={equipmentForm.type}
+              onChange={(e) => setEquipmentForm({ ...equipmentForm, type: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Location"
+              value={equipmentForm.location}
+              onChange={(e) => setEquipmentForm({ ...equipmentForm, location: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Hours Used"
+              type="number"
+              value={equipmentForm.hoursUsed}
+              onChange={(e) => setEquipmentForm({ ...equipmentForm, hoursUsed: parseInt(e.target.value) || 0 })}
+              fullWidth
+            />
+            <TextField
+              label="Next Maintenance Date"
+              type="date"
+              value={equipmentForm.nextMaintenance}
+              onChange={(e) => setEquipmentForm({ ...equipmentForm, nextMaintenance: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddEquipmentOpen(false)}>Cancel</Button>
+          <Button onClick={handleAddEquipment} variant="contained">Add Equipment</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Maintenance Log Dialog */}
+      <Dialog open={maintenanceLogOpen} onClose={() => setMaintenanceLogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Maintenance Log - {selectedEquipment?.name}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Maintenance History
+            </Typography>
+            <List>
+              <ListItem>
+                <ListItemAvatar>
+                  <Avatar><Build /></Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary="Oil Change & Filter Replacement"
+                  secondary="2024-09-15 - R850 - Routine maintenance completed"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemAvatar>
+                  <Avatar><Build /></Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary="Hydraulic System Check"
+                  secondary="2024-08-20 - R1,200 - Minor leak repaired"
+                />
+              </ListItem>
+            </List>
+            <Button variant="contained" startIcon={<Add />} sx={{ mt: 2 }} onClick={() => setAddMaintenanceOpen(true)}>
+              Add Maintenance Record
+            </Button>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMaintenanceLogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Maintenance Dialog */}
+      <Dialog open={addMaintenanceOpen} onClose={() => setAddMaintenanceOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add Maintenance Record - {selectedEquipment?.name}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              label="Maintenance Date"
+              type="date"
+              value={maintenanceForm.date}
+              onChange={(e) => setMaintenanceForm({ ...maintenanceForm, date: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+            <FormControl fullWidth>
+              <InputLabel>Maintenance Type</InputLabel>
+              <Select
+                value={maintenanceForm.type}
+                onChange={(e) => setMaintenanceForm({ ...maintenanceForm, type: e.target.value })}
+              >
+                <MenuItem value="Oil Change">Oil Change</MenuItem>
+                <MenuItem value="Filter Replacement">Filter Replacement</MenuItem>
+                <MenuItem value="Hydraulic Service">Hydraulic Service</MenuItem>
+                <MenuItem value="Engine Service">Engine Service</MenuItem>
+                <MenuItem value="Tire Replacement">Tire Replacement</MenuItem>
+                <MenuItem value="Brake Service">Brake Service</MenuItem>
+                <MenuItem value="General Inspection">General Inspection</MenuItem>
+                <MenuItem value="Repair">Repair</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Description"
+              multiline
+              rows={3}
+              value={maintenanceForm.description}
+              onChange={(e) => setMaintenanceForm({ ...maintenanceForm, description: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Cost (ZAR)"
+              type="number"
+              value={maintenanceForm.cost}
+              onChange={(e) => setMaintenanceForm({ ...maintenanceForm, cost: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Technician"
+              value={maintenanceForm.technician}
+              onChange={(e) => setMaintenanceForm({ ...maintenanceForm, technician: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Next Service Date"
+              type="date"
+              value={maintenanceForm.nextServiceDate}
+              onChange={(e) => setMaintenanceForm({ ...maintenanceForm, nextServiceDate: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddMaintenanceOpen(false)}>Cancel</Button>
+          <Button onClick={handleAddMaintenance} variant="contained">Add Record</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Maintenance Log Dialog */}
+      <Dialog open={maintenanceLogOpen} onClose={() => setMaintenanceLogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Maintenance Log - {selectedEquipment?.name}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>Recent Maintenance Records</Typography>
+            <List>
+              <ListItem>
+                <ListItemText
+                  primary="Oil Change & Filter Replacement"
+                  secondary="Date: 2025-09-15 | Cost: R1,250 | Next due: 2025-12-15"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Hydraulic System Inspection"
+                  secondary="Date: 2025-08-20 | Cost: R850 | Status: Completed"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Tire Rotation & Pressure Check"
+                  secondary="Date: 2025-07-10 | Cost: R450 | Next due: 2025-10-10"
+                />
+              </ListItem>
+            </List>
+            
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Upcoming Maintenance</Typography>
+            <List>
+              <ListItem>
+                <ListItemText
+                  primary="Annual Service & Inspection"
+                  secondary="Due: 2025-10-15 | Estimated cost: R3,500"
+                />
+                <Chip label="Due Soon" color="warning" size="small" />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Brake System Check"
+                  secondary="Due: 2025-11-01 | Estimated cost: R1,200"
+                />
+                <Chip label="Scheduled" color="info" size="small" />
+              </ListItem>
+            </List>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMaintenanceLogOpen(false)}>Close</Button>
+          <Button variant="contained">Add Maintenance Record</Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -7,6 +7,8 @@ interface Transaction {
   amount: number;
   type: 'income' | 'expense';
   category: string;
+  farm?: string;
+  status?: string;
 }
 
 interface FinanceState {
