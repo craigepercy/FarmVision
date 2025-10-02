@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, CssBaseline } from '@mui/material';
 import Header from './Header';
-import Sidebar from './Sidebar';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -11,7 +10,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   
   return (
     <Box sx={{ 
-      display: 'flex', 
+      display: 'flex',
+      flexDirection: 'column',
       minHeight: '100vh',
       width: '100%',
       maxWidth: '100%',
@@ -20,22 +20,19 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }}>
       <CssBaseline />
       <Header />
-      <Sidebar />
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           bgcolor: 'background.default',
-          p: { xs: 1, sm: 2, md: 3 },
-          width: { xs: '100%', sm: 'calc(100% - 240px)' },
-          maxWidth: { xs: '100%', sm: 'calc(100% - 240px)' },
+          p: { xs: 2, sm: 3, md: 4 },
+          width: '100%',
+          maxWidth: '100%',
           overflow: 'auto',
-          minHeight: '100vh',
-          maxHeight: '100vh',
+          minHeight: 'calc(100vh - 80px)',
           position: 'relative',
           boxSizing: 'border-box',
-          paddingTop: { xs: '64px', sm: '72px' },
-          marginLeft: { xs: 0, sm: '240px' }
+          paddingTop: '24px'
         }}
       >
         <Box sx={{ 

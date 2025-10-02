@@ -16,6 +16,8 @@ import Analytics from './pages/Analytics';
 import AIAssistant from './pages/AIAssistant';
 import AuditTrail from './pages/AuditTrail';
 import Notifications from './pages/Notifications';
+import Messages from './pages/Messages';
+import FloatingAIAssistant from './components/FloatingAIAssistant';
 
 const theme = createTheme({
   palette: {
@@ -390,6 +392,16 @@ function App() {
               }
             />
             <Route
+              path="/messages"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Messages />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/unauthorized"
               element={
                 <div style={{ padding: '2rem', textAlign: 'center' }}>
@@ -399,6 +411,9 @@ function App() {
               }
             />
           </Routes>
+          <ProtectedRoute>
+            <FloatingAIAssistant />
+          </ProtectedRoute>
         </Router>
       </ThemeProvider>
     </Provider>

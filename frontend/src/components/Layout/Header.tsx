@@ -1,16 +1,21 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Badge, Menu, MenuItem } from '@mui/material';
-import { Notifications, AccountCircle, ExitToApp, Message } from '@mui/icons-material';
+import { AppBar, Toolbar, Typography, IconButton, Badge, Menu, MenuItem, Button, Box, useMediaQuery, useTheme } from '@mui/material';
+import { Notifications, AccountCircle, ExitToApp, Message, MoreVert } from '@mui/icons-material';
+import { Link, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { logout } from '../../store/slices/authSlice';
 
 const Header: React.FC = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useSelector((state: RootState) => state.auth);
   const { notifications } = useSelector((state: RootState) => state.dashboard);
   const { threads } = useSelector((state: RootState) => state.messaging);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [moreMenuAnchor, setMoreMenuAnchor] = React.useState<null | HTMLElement>(null);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -20,20 +25,44 @@ const Header: React.FC = () => {
     setAnchorEl(null);
   };
 
+  const handleMoreMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setMoreMenuAnchor(event.currentTarget);
+  };
+
+  const handleMoreMenuClose = () => {
+    setMoreMenuAnchor(null);
+  };
+
   const handleLogout = () => {
     dispatch(logout());
     handleClose();
   };
 
+  const primaryNavItems = [
+    { label: 'Dashboard', path: '/dashboard' },
+    { label: 'Crops', path: '/crops' },
+    { label: 'Cattle', path: '/cattle' },
+    { label: 'Finance', path: '/finance' },
+    { label: 'Machinery', path: '/machinery' },
+  ];
+
+  const secondaryNavItems = [
+    { label: 'Analytics', path: '/analytics' },
+    { label: 'AI Assistant', path: '/ai-assistant' },
+    { label: 'Audit Trail', path: '/audit' },
+    { label: 'Staff & Tasks', path: '/staff' },
+  ];
+
   return (
     <AppBar 
       position="fixed" 
       sx={{ 
-        zIndex: (theme) => theme.zIndex.drawer + 1, 
+        zIndex: 1000,
         width: '100%',
+        height: '80px',
         '& .MuiToolbar-root': {
-          minHeight: { xs: 56, sm: 64 },
-          px: { xs: 1, sm: 2 }
+          minHeight: '80px',
+          px: { xs: 2, sm: 3 }
         }
       }}
     >
@@ -42,13 +71,85 @@ const Header: React.FC = () => {
           variant="h6" 
           component="div" 
           sx={{ 
-            flexGrow: 1,
-            fontSize: { xs: '1rem', sm: '1.25rem' },
+            mr: 4,
+            fontSize: { xs: '1.125rem', sm: '1.25rem' },
             fontWeight: 700
           }}
         >
           🌱 FarmVision
         </Typography>
+
+        {/* Primary Navigation - Desktop */}
+        {!isMobile && (
+          <Box sx={{ display: 'flex', gap: 1, flexGrow: 1 }}>
+            {primaryNavItems.map((item) => (
+              <Button
+                key={item.path}
+                color="inherit"
+                component={Link}
+                to={item.path}
+                sx={{
+                  fontWeight: location.pathname === item.path ? 600 : 400,
+                  backgroundColor: location.pathname === item.path ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  borderRadius: 2,
+                  px: 2,
+                  py: 1,
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  }
+                }}
+              >
+                {item.label}
+              </Button>
+            ))}
+          </Box>
+        )}
+
+        {/* Secondary Navigation Menu */}
+        <IconButton
+          color="inherit"
+          onClick={handleMoreMenu}
+          sx={{ mr: 1 }}
+        >
+          <MoreVert />
+        </IconButton>
+
+        <Menu
+          anchorEl={moreMenuAnchor}
+          open={Boolean(moreMenuAnchor)}
+          onClose={handleMoreMenuClose}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          {isMobile && primaryNavItems.map((item) => (
+            <MenuItem
+              key={item.path}
+              component={Link}
+              to={item.path}
+              onClick={handleMoreMenuClose}
+              sx={{
+                fontWeight: location.pathname === item.path ? 600 : 400,
+                backgroundColor: location.pathname === item.path ? 'action.selected' : 'transparent',
+              }}
+            >
+              {item.label}
+            </MenuItem>
+          ))}
+          {secondaryNavItems.map((item) => (
+            <MenuItem
+              key={item.path}
+              component={Link}
+              to={item.path}
+              onClick={handleMoreMenuClose}
+              sx={{
+                fontWeight: location.pathname === item.path ? 600 : 400,
+                backgroundColor: location.pathname === item.path ? 'action.selected' : 'transparent',
+              }}
+            >
+              {item.label}
+            </MenuItem>
+          ))}
+        </Menu>
         
         <IconButton 
           color="inherit"
@@ -68,6 +169,8 @@ const Header: React.FC = () => {
         <IconButton 
           color="inherit"
           size="medium"
+          component={Link}
+          to="/messages"
           sx={{ 
             p: { xs: 0.5, sm: 1 },
             '& .MuiBadge-badge': {

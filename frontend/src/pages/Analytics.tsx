@@ -215,6 +215,112 @@ const Analytics: React.FC = () => {
         </Box>
       </Box>
 
+      {/* Example Scenarios Library */}
+      <Box sx={{ mb: 3 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Example Scenarios - Try These Simulations
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Learn how the scenario simulator works with these pre-built examples based on real-world farming decisions.
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: '1 1 300px', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  🌱 Crop Rotation Optimization
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  "What if I plant soybeans instead of maize in North Field next season?"
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                  Shows: Projected yield, revenue, cost differences, soil health impact, nitrogen fixation benefits
+                </Typography>
+                <Button variant="outlined" size="small" fullWidth>
+                  Try This Example
+                </Button>
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  🐄 Livestock Expansion Analysis
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  "How would adding 50 more cattle affect my profitability?"
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                  Shows: Feed costs, revenue projections, space requirements, labor needs, ROI timeline
+                </Typography>
+                <Button variant="outlined" size="small" fullWidth>
+                  Try This Example
+                </Button>
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  🚜 Equipment Investment Decision
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  "Should I buy a new harvester or continue renting?"
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                  Shows: 5-year cost comparison, depreciation, maintenance costs, break-even analysis
+                </Typography>
+                <Button variant="outlined" size="small" fullWidth>
+                  Try This Example
+                </Button>
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  🌧️ Weather Impact Scenarios
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  "How will a drought scenario affect my yields and revenue?"
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                  Shows: Yield reduction estimates, irrigation costs, revenue impact, risk mitigation
+                </Typography>
+                <Button variant="outlined" size="small" fullWidth>
+                  Try This Example
+                </Button>
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  📈 Market Timing Strategy
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  "If I hold my maize for 3 months, what's my projected profit?"
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                  Shows: Price projections (SAFFEX), storage costs, net profit comparison, risk assessment
+                </Typography>
+                <Button variant="outlined" size="small" fullWidth>
+                  Try This Example
+                </Button>
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  💰 Input Cost Sensitivity
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  "How will a 20% increase in fertilizer costs impact my margins?"
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                  Shows: Cost per hectare, total impact, profitability changes, alternative strategies
+                </Typography>
+                <Button variant="outlined" size="small" fullWidth>
+                  Try This Example
+                </Button>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+
       <Box>
         <Card>
           <CardContent>
