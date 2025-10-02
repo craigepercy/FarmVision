@@ -20,6 +20,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { selectThread, markThreadAsRead, createNewThread } from '../store/slices/messagingSlice';
 import FarmMap from '../components/FarmMap';
+import WeatherWidget from '../components/WeatherWidget';
 
 const Dashboard: React.FC = () => {
   const { stats, notifications } = useSelector((state: RootState) => state.dashboard);
@@ -109,14 +110,14 @@ const Dashboard: React.FC = () => {
         gutterBottom
         sx={{
           fontWeight: 700,
-          background: 'linear-gradient(135deg, #1e293b 0%, #475569 100%)',
+          background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          mb: 4
+          mb: 3
         }}
       >
-        Farm Dashboard
+        🏡 Farm Dashboard
       </Typography>
       
       <Box sx={{ 
@@ -190,71 +191,11 @@ const Dashboard: React.FC = () => {
               Interactive Farm Map
             </Typography>
             <FarmMap height={{ xs: 200, sm: 250, md: 300 }} />
-            <Box sx={{ 
-              display: 'grid',
-              gridTemplateColumns: { 
-                xs: 'repeat(3, 1fr)', 
-                sm: 'repeat(4, 1fr)', 
-                md: 'repeat(7, 1fr)' 
-              },
-              gap: { xs: 0.5, sm: 1 },
-              mt: { xs: 2, sm: 3 },
-              width: '100%',
-              maxWidth: '100%'
-            }}>
-              {[0,1,2,3,4,5,6].map(day => (
-                <Box 
-                  key={day} 
-                  sx={{ 
-                    textAlign: 'center', 
-                    p: { xs: 1, sm: 1.5 }, 
-                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%)',
-                    borderRadius: { xs: 1, sm: 2 },
-                    border: '1px solid rgba(59, 130, 246, 0.2)',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)'
-                    },
-                    minWidth: 0,
-                    width: '100%'
-                  }}
-                >
-                  <Typography 
-                    variant="caption" 
-                    display="block" 
-                    sx={{ 
-                      fontWeight: 500, 
-                      color: '#64748b',
-                      fontSize: { xs: '0.65rem', sm: '0.75rem' }
-                    }}
-                  >
-                    {new Date(Date.now() + day * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    fontWeight="bold" 
-                    sx={{ 
-                      color: '#1e293b', 
-                      my: 0.5,
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
-                    {22 + Math.floor(Math.random() * 8)}°C
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
-                    sx={{ 
-                      color: '#3b82f6', 
-                      fontWeight: 500,
-                      fontSize: { xs: '0.6rem', sm: '0.75rem' }
-                    }}
-                  >
-                    {Math.floor(Math.random() * 30)}% rain
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
+            <WeatherWidget 
+              showForecast={true}
+              showInsights={true}
+              compact={true}
+            />
           </CardContent>
         </Card>
 

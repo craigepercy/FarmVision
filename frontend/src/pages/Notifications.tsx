@@ -142,8 +142,18 @@ const Notifications: React.FC = () => {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Box display="flex" alignItems="center">
-          <Typography variant="h4" sx={{ mr: 2 }}>
-            Notifications
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              mr: 2,
+              fontWeight: 700,
+              background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            🔔 Notifications
           </Typography>
           <Badge badgeContent={unreadCount} color="error">
             <NotificationsIcon />

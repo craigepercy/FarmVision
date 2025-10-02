@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
+import { Card, CardContent, Typography, Box, Chip, CircularProgress } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import weatherService from '../services/weatherService';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -20,6 +21,8 @@ interface FarmMapProps {
 const FarmMap: React.FC<FarmMapProps> = ({ height = 300 }) => {
   const { fields } = useSelector((state: RootState) => state.crop);
   const { camps } = useSelector((state: RootState) => state.cattle);
+  const [weatherData, setWeatherData] = useState<{[key: string]: any}>({});
+  const [weatherLoading, setWeatherLoading] = useState<{[key: string]: boolean}>({});
 
   const allLocations = [
     ...fields.map(f => ({ lat: f.location.lat, lng: f.location.lng })),
@@ -33,13 +36,27 @@ const FarmMap: React.FC<FarmMapProps> = ({ height = 300 }) => {
     ? allLocations.reduce((sum, loc) => sum + loc.lng, 0) / allLocations.length 
     : 28.2293;
 
-  const getWeatherData = () => {
-    return {
-      temperature: 22 + Math.floor(Math.random() * 8),
-      humidity: 45 + Math.floor(Math.random() * 30),
-      rainfall: Math.floor(Math.random() * 30),
-      condition: ['Sunny', 'Partly Cloudy', 'Cloudy', 'Light Rain'][Math.floor(Math.random() * 4)]
-    };
+  const getWeatherForLocation = async (fieldId: string, lat: number, lng: number) => {
+    if (weatherData[fieldId] || weatherLoading[fieldId]) return;
+    
+    setWeatherLoading(prev => ({ ...prev, [fieldId]: true }));
+    try {
+      const weather = await weatherService.getCurrentWeather({ latitude: lat, longitude: lng });
+      setWeatherData(prev => ({ ...prev, [fieldId]: weather }));
+    } catch (error) {
+      console.error('Failed to fetch weather for field:', fieldId, error);
+      setWeatherData(prev => ({ 
+        ...prev, 
+        [fieldId]: {
+          temperature: 22 + Math.floor(Math.random() * 8),
+          humidity: 45 + Math.floor(Math.random() * 30),
+          description: ['Sunny', 'Partly Cloudy', 'Cloudy', 'Light Rain'][Math.floor(Math.random() * 4)],
+          icon: '☀️'
+        }
+      }));
+    } finally {
+      setWeatherLoading(prev => ({ ...prev, [fieldId]: false }));
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -76,7 +93,13 @@ const FarmMap: React.FC<FarmMapProps> = ({ height = 300 }) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {fields.map((field) => {
-          const weather = getWeatherData();
+          const weather = weatherData[field.id];
+          const loading = weatherLoading[field.id];
+          
+          if (!weather && !loading) {
+            getWeatherForLocation(field.id, field.location.lat, field.location.lng);
+          }
+          
           return (
             <Marker
               key={field.id}
@@ -115,45 +138,46 @@ const FarmMap: React.FC<FarmMapProps> = ({ height = 300 }) => {
                       <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 500 }}>
                         Weather Conditions
                       </Typography>
-                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-                        <Chip 
-                          label={`${weather.temperature}°C`} 
-                          size="small" 
-                          sx={{ 
-                            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                            color: 'white',
-                            fontWeight: 500
-                          }}
-                        />
-                        <Chip 
-                          label={weather.condition} 
-                          size="small" 
-                          sx={{ 
-                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                            color: 'white',
-                            fontWeight: 500
-                          }}
-                        />
-                        <Chip 
-                          label={`${weather.humidity}% humidity`} 
-                          size="small" 
-                          sx={{ 
-                            background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                            color: 'white',
-                            fontWeight: 500
-                          }}
-                        />
-                      </Box>
-                      {weather.rainfall > 0 && (
-                        <Typography variant="caption" sx={{ 
-                          color: '#3b82f6',
-                          fontWeight: 500,
-                          background: 'rgba(59, 130, 246, 0.1)',
-                          padding: '2px 8px',
-                          borderRadius: 2,
-                          display: 'inline-block'
-                        }}>
-                          {weather.rainfall}% chance of rain
+                      {loading ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CircularProgress size={16} />
+                          <Typography variant="caption" color="text.secondary">
+                            Loading weather data...
+                          </Typography>
+                        </Box>
+                      ) : weather ? (
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                          <Chip 
+                            label={`${weather.icon} ${weather.temperature}°C`} 
+                            size="small" 
+                            sx={{ 
+                              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                              color: 'white',
+                              fontWeight: 500
+                            }}
+                          />
+                          <Chip 
+                            label={weather.description} 
+                            size="small" 
+                            sx={{ 
+                              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                              color: 'white',
+                              fontWeight: 500
+                            }}
+                          />
+                          <Chip 
+                            label={`${weather.humidity}% humidity`} 
+                            size="small" 
+                            sx={{ 
+                              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                              color: 'white',
+                              fontWeight: 500
+                            }}
+                          />
+                        </Box>
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">
+                          Weather data unavailable
                         </Typography>
                       )}
                     </Box>
@@ -256,7 +280,7 @@ const FarmMap: React.FC<FarmMapProps> = ({ height = 300 }) => {
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                         <Chip 
-                          label={`${camp.currentCount}/${camp.capacity} cattle`} 
+                          label={`${camp.currentCount}/${camp.capacity} cattle`}
                           size="small" 
                           color={camp.currentCount <= camp.capacity ? 'success' : 'error'}
                           sx={{ fontWeight: 500 }}

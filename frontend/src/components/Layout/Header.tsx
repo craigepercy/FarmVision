@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Badge, Menu, MenuItem } from '@mui/material';
-import { Notifications, AccountCircle, ExitToApp } from '@mui/icons-material';
+import { Notifications, AccountCircle, ExitToApp, Message } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { logout } from '../../store/slices/authSlice';
@@ -9,6 +9,7 @@ const Header: React.FC = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const { notifications } = useSelector((state: RootState) => state.dashboard);
+  const { threads } = useSelector((state: RootState) => state.messaging);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -43,10 +44,10 @@ const Header: React.FC = () => {
           sx={{ 
             flexGrow: 1,
             fontSize: { xs: '1rem', sm: '1.25rem' },
-            fontWeight: 600
+            fontWeight: 700
           }}
         >
-          FarmVision
+          🌱 FarmVision
         </Typography>
         
         <IconButton 
@@ -61,6 +62,21 @@ const Header: React.FC = () => {
         >
           <Badge badgeContent={notifications.length} color="error">
             <Notifications sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
+          </Badge>
+        </IconButton>
+
+        <IconButton 
+          color="inherit"
+          size="medium"
+          sx={{ 
+            p: { xs: 0.5, sm: 1 },
+            '& .MuiBadge-badge': {
+              fontSize: { xs: '0.625rem', sm: '0.75rem' }
+            }
+          }}
+        >
+          <Badge badgeContent={threads.filter(t => t.unreadCount > 0).length} color="primary">
+            <Message sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
           </Badge>
         </IconButton>
 
